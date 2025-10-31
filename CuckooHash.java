@@ -318,7 +318,6 @@ public class CuckooHash<K, V> {
         // we need to call rehash() then put everything in it again (the hash function will now output diff things due to new hashcodes)
         rehash();
         put(key, value);
-
 		return;
 	}
 

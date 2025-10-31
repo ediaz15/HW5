@@ -66,8 +66,11 @@ class ProblemSolutions {
     public int findKthLargest(int[] array, int k) {
 
         // ADD YOUR CODE HERE
-        //
-        return 0;
+        //sort array, then by subtracting the length from k, we technically go to k - 1 index if array was reversed
+        Arrays.sort(array);
+        int kth = array[array.length - k];
+        //i think a minheap could be good here but not sure how to do so
+        return kth;
     }
 
 
@@ -87,8 +90,9 @@ class ProblemSolutions {
     public int[] sort2Arrays(int[] array1, int[] array2) {
 
         // ADD YOU CODE HERE
-
-        return null;
+        //since trees have natural ordering, they can do this for me, well i could use a binary search tree but like
+        int[] sortedArray = new int[array1.length + array2.length];
+        return sortedArray;
     }
 
 }
