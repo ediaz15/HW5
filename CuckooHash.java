@@ -7,10 +7,7 @@
  *
  ********************************************************************/
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.lang.Math;
 
 
@@ -186,18 +183,25 @@ public class CuckooHash<K, V> {
      * Each element can only be inserted into one of two bucket locations,
      * defined by the two separate hash functions, h1(key) or h2(key).
 	 * Each element's initial location will always be defined
-	 * by h1(key). If later it is kicked out of that bucket location by 
+	 * by h1(key). If later it is kicked out of that bucket location by
      * another element insertion, it will move back and forth between those
      *  two hash locations (aka, bucket locations).
 	 *
 	 * On its initial invocation, this method places the passed <key,value>
-	 * element at its h1(key) bucket location. If an element is already located
+	 * element at its h1(key) bucket location.
+     *
+     * If an element is already located
 	 * at that bucket location, it will be kicked out and moved to its secondary
-	 * location in order to make room for this initially inserted element. The
-	 * secondary location is defined by the kicked out key's alternative hash
+	 * location in order to make room for this initially inserted element.
+     *
+     *
+     * !!!!
+     * The secondary location is defined by the kicked out key's alternative hash
 	 * function (aka, either h1(key) or h2(key), whichever is the one that moves
 	 * to the alternate location.
-	 *
+	 *!!!
+     *
+     *
 	 * This process will continue in a loop as it moves kicked out 
      * elements to their alternate location (defined by h1(key) and h2(key))
      * until either:
@@ -208,9 +212,13 @@ public class CuckooHash<K, V> {
 	 *
 	 * If we reach 'n' shuffles of elements being kicked out and moved to their
      * secondary locations (leading to what appears to be a cycle), we will grow
-	 * the hashmap and rehash (via method rehash()). After the rehash, we will
+	 * the hashmap and rehash (via method rehash()).
+     *
+     *
+     * After the rehash, we will
 	 * need to re-invoke this method recursively, as we will have one element that
-	 * was kicked out after the 'n' iteration that still needs to be inserted. Note,
+	 * was kicked out after the 'n' iteration that still needs to be inserted.
+     * Note,
 	 * that it is possible when the bucket lists is small, that we may need to rehash
 	 * twice to break a cycle. Again, this is done automatically when calling this
 	 * method recursively.
@@ -231,7 +239,8 @@ public class CuckooHash<K, V> {
 	 *
 	 * HINT 2: For simplicity of this assignment, after shuffling elements between
 	 * buckets 'n' times (where 'n' is defined by the value of variable 'CAPACITY',
-	 * you can assume you are in an infinite cycle. This may not be true, but if
+	 * you can assume you are in an infinite cycle.
+     * This may not be true, but if
 	 * growing the hash map when not in a cycle, this will not cause data integrity
 	 * issues. BUT BE CLEAR IN PRACTICE, as we discussed in class, a better way to
 	 * do this is to build a graph (one edge at a time) for each element shuffled
@@ -249,6 +258,66 @@ public class CuckooHash<K, V> {
 		// ADD YOUR CODE HERE - DO NOT FORGET TO ADD YOUR NAME AT TOP OF FILE.
 		// Also make sure you read this method's prologue above, it should help
 		// you. Especially the two HINTS in the prologue.
+
+        //glimpse of the instructions and pseudocode ;-;
+
+        //hash1(), hash2() if needed
+        //we must insert the pair in either h1 or h2 [to know where to alt]
+        //check h1 first, think of it like default
+            //if we already have the key and value there, theres nun we need to do
+            //IF kicked out from h1 bucket, then go check h2 bucket using h2()
+                //check if h1() is empty -> insert the pair without worry
+                //if not empty -> kick out the pair there -> insert
+        //theres a mention on iterations -> if n = capacity, we are in inf loop?? maybe we check n if it reaches capacity..
+            //if we do reach capacity, use rehash()
+        //if rehash() does happen, need to spam once again put everything back, just call put() again
+
+        //shuffling scenerios maybe:
+            //we already inserted this so no need to do ayything anymore -> both bucket key and val the same
+            //if the bucket using h1() is empty -> just insert without a problem
+            //if the bucket using h1() is NOT empty -> do the following:
+                //get the bucket old key and value, store it, replace it at the time, and move it somewhere else
+                //update the old key to refer to new key -> check which hash() we used to know what to alt to next
+
+        int bucket = hash1(key);
+        int n = 0; //will be used for iterations!
+        while(n < CAPACITY){
+            //we already inserted this PAIR, stop the recursion here
+            if(table[bucket] != null && table[bucket].getBucKey().equals(key) && table[bucket].getValue().equals(value)){
+                return;
+            }
+            //check if the bucket is empty [bucket 1 from hash1 basically]
+            if(table[bucket] == null){
+                //we insert it without any worry, we need a bucket item thing here
+                table[bucket] = new Bucket<K,V>(key,value);
+                return;
+            }
+            //if the bucket isnt empty then we dothe stuff mentioned above
+            //store old key and val, replace it, and move it to the their new bucket
+            K oldKey = table[bucket].getBucKey();
+            V oldVal = table[bucket].getValue();
+            //replace it with our actual key and val
+            table[bucket] = new Bucket<K,V>(key, value);
+
+            //after the replacement, we gotta relocate the oldkey and val, BUT we need to know what hash() they used
+
+            //we need to update the key and value to be able to use them for their relocation
+            key = oldKey;
+            value = oldVal;
+            //since this is recursion, we changed the instance of where our actual key and value is
+            //since we already inserted the previous key and value, we need to now insert this one
+            //now we need to make sure that we chose the alt bucket, (if h1 -> now use h2)
+            if(bucket == hash1(key)){
+                bucket = hash2(key);
+            } else {
+                bucket = hash1(key);
+            }
+            n++;
+        }
+        // if we reached the capacity, we can assume theres inf shuffling
+        // we need to call rehash() then put everything in it again (the hash function will now output diff things due to new hashcodes)
+        rehash();
+        put(key, value);
 
 		return;
 	}
