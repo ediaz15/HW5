@@ -27,8 +27,8 @@ import java.lang.Math;
          produces'k' hash codes and sets those bits.
  *    3) To add an element to the set, we derive bit indexes from all 'k' 
          hash codes and set those bits.
- *    4) To determine if an element is in the set, we again calculate the 
- *       corresponding hash codes and bit indexes, and say it is likely 
+ *    4) To determine if an element is in the set, we again calculate the
+ *       corresponding hash codes and bit indexes, and say it is likely
  *       present if and only if all corresponding bits are set.
  *
  * The margin of error (or false positive rate) thus comes from the fact 
@@ -204,7 +204,6 @@ class BloomFilter {
         }
     }
 
-
     /*
      * Method contains
      *
@@ -218,13 +217,31 @@ class BloomFilter {
     public boolean contains(String s) {
 
         // ADD YOUR CODE HERE - DO NOT FORGET TO ADD YOUR NAME AT TOP OF FILE
-        //
         // HINT: the bitmap is the private class variable 'data', and it is
         // of type BitSet (Java class BitSet). See Oracle documentation for
         // this class on available methods. You can also see how method 'add'
         // in this class uses the object.
 
-        return false;
+        //HL -> simple but looks like we need to get the bit indexes based on hashCode for the current string
+            //for each of the bit indexes, we need to check if its there in the bitset using data
+            //moment we find one bit that doesn't match it, we return false; otherwise true
+        /* from the tips:
+        * determine if an element is in the set, we again calculate the
+         *       corresponding
+         * hash codes and bit indexes,
+         *  and say it is likely
+         *       present if and only if all corresponding bits are set.*/
+
+        //using the stuff from add(), we can find this bits and hashcode for the string
+        for (int n = 0; n < noHashes; n++) {
+            long hc = hashCode(s, n);
+            int bitNo = (int) (hc) & this.hashMask; //bit indexes and hashcode
+            //we can check if the bitmap contains these bit indexes after each hashcode based on the s
+            if(!data.get(bitNo)){
+                return false;
+            }
+        }
+        return true;
     }
 
 
